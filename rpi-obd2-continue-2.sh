@@ -2,7 +2,7 @@
 
 ################################################################################
 #
-#    filename: rpi-obd2-install1.sh
+#    filename: rpi-obd2-continue-2.sh
 # description: Script to install pyOBD on RPI2/3
 #      author: Andre Mattie
 #       email: devel@introsec.ca
@@ -13,6 +13,10 @@
 ################################################################################
 
 # variables
+PYSERIAL="python-serial"
+BLUETOOTH="bluetooth bluez-utils blueman"
+PYDEPS="python-wxgtk2.8 python-wxtools wx2.8-i18n libwxgtk2.8-dev"
+GITCORE="git-core"
 DIR="`pwd`"
 
 # ensure script is run as root
@@ -21,31 +25,51 @@ if [ "$(id -u)" -ne "0" ] ; then
     exit 1
 fi
 
-# update, upgrade, and autoremove packages on system
-function UPGRADE {
-	apt-get  -y update && apt-get -y upgrade && apt-get -y autoremove	
+# Install python-serial
+function PYSERIAL {
+	apt-get install -y $PYSERIAL
 	exit 1
 }
 
-### prep script for reboot
-cp rpi-obd2-install2.sh $DIR
-cp rpi-obd2-install3.sh $DIR
+# install bluetooth dependencies
+function BLUETOOTH {
+	apt-get install -y $BLUETOOTH
+	exit 1
+}
 
-function CONT1 {
+# install extra python packages
+function PYDEPS {
+	apt-get install -y $PYDEPS
+	exit 1
+}
+
+# install git
+function GITCORE {
+	apt-get install -y $GITCORE
+	exit 1
+}
+
+function CONT2 {
 	# add continuation to rc.local
 	echo -e "#!/bin/sh -e" > /etc/rc.local
-	echo -e "if [ -x $DIR/rpi-obd2-continue-2.sh ]" >> /etc/rc.local
+	echo -e "if [ -x $DIR/rpi-obd2-continue-3.sh ]" >> /etc/rc.local
 	echo -e "then" >> /etc/rc.local
-	echo -e "    sudo xterm -e $DIR/rpi-obd2-continue-2.sh" >> /etc/rc.local
+	echo -e "    sudo xterm -e $DIR/rpi-obd2-continue-3.sh" >> /etc/rc.local
 	echo -e "fi" >> /etc/rc.local
 	echo -e "exit 0" >> /etc/rc.local
 }
 
-# run update and upgrade
-UPGRADE
+# install needed packages
+PYSERIAL
+BLUETOOTH
+PYDEPS
+GITCORE
 
-# run install continuation 1
-CONT1
+# wait 10sec
+wait 10
+
+# run install continuation 2
+CONT2
 
 # reboot system
 reboot
